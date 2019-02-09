@@ -10,7 +10,7 @@ import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 
 let DefaultIcon = L.icon({
     iconUrl: icon,
-    popupAnchor:[12.5, 0],
+    popupAnchor: [12.5, 0],
     shadowUrl: iconShadow
 });
 
@@ -23,7 +23,8 @@ class MapBox extends Component {
             lat: 60.16734721573472,
             lng: 24.94248390197754
         },
-        zoom: 13,
+        haveUsersLocation: false,
+        zoom: 2,
     }
 
     componentDidMount(){
@@ -32,9 +33,26 @@ class MapBox extends Component {
                 location:{
                     lat: position.coords.latitude,
                     lng: position.coords.longitude
-                }
+                },
+                haveUsersLocation: true,
+                zoom: 13
             })
-          })
+        }, ()=>{ //when failed
+            console.log('uh oh..they didnt give us their locaiton')
+            fetch('https://ipapi.co/json')
+                .then(res => res.json())
+                .then( location => {
+                    console.log(location);
+                    this.setState({
+                        location:{
+                            lat: location.latitude,
+                            lng: location.longitude
+                        },
+                        haveUsersLocation: true,
+                        zoom: 13
+                    })
+                })
+        })
     }
 
     render() {
@@ -46,11 +64,14 @@ class MapBox extends Component {
                     attribution='&amp;copy <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
+                { this.state.haveUsersLocation ? 
                 <Marker position={position}>
                     <Popup>
                         A pretty CSS3 popup. <br /> Easily customizable.
                     </Popup>
-                </Marker>
+                </Marker>: ""
+                }
+
             </Map>
                     
                     
