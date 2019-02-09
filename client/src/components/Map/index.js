@@ -10,6 +10,7 @@ import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 
 let DefaultIcon = L.icon({
     iconUrl: icon,
+    popupAnchor:[12.5, 0],
     shadowUrl: iconShadow
 });
 
@@ -18,19 +19,26 @@ L.Marker.prototype.options.icon = DefaultIcon;
 class MapBox extends Component {
     
     state = {
-        lat: 60.16734721573472,
-        lng: 24.94248390197754,
+        location: {//default Helsinki
+            lat: 60.16734721573472,
+            lng: 24.94248390197754
+        },
         zoom: 13,
     }
 
     componentDidMount(){
-        navigator.geolocation.getCurrentPosition( function(position) {
-            console.log(position);
-          });
+        navigator.geolocation.getCurrentPosition( (position) => {
+            this.setState({
+                location:{
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                }
+            })
+          })
     }
 
     render() {
-        const position = [this.state.lat, this.state.lng]
+        const position = [this.state.location.lat, this.state.location.lng]
         return (
             
             <Map className="map" center={position} zoom={this.state.zoom}>
