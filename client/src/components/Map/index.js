@@ -1,12 +1,19 @@
 import React, {Component} from 'react';
+import "./Map.css";
+
+//Leaflet
 import {Map, TileLayer, Marker, Popup} from 'react-leaflet';
 import L from 'leaflet';
-import '../../../node_modules/leaflet/dist/leaflet.css';
-import "./Map.css";
+import 'leaflet/dist/leaflet.css';
 
 //icon image
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+
+import {saveMessage} from '../../actions/saveMessageActions';
+import {connect} from 'react-redux';
+import { Card, Button, Form, TextArea } from 'semantic-ui-react';
+
 
 let DefaultIcon = L.icon({
     iconUrl: icon,
@@ -25,6 +32,10 @@ class MapBox extends Component {
         },
         haveUsersLocation: false,
         zoom: 2,
+        userMessage: {
+            name:'',
+            message:''
+        }
     }
 
     componentDidMount(){
@@ -55,31 +66,82 @@ class MapBox extends Component {
         })
     }
 
+    formSubmit = (e)=> {
+        e.preventDefault();
+        //console.log(this.state.userMessage)
+        const item = this.state.userMessage;
+
+        this.props.dispatch(saveMessage(item));
+    }
+
+    valueChange = (e) => {
+        const {name, value} = e.target;
+        this.setState( (prevState) => ({
+            userMessage : {
+                ...prevState.location,
+                ...prevState.userMessage,
+                [name]: value
+            }    
+        }))
+    }
+
     render() {
         const position = [this.state.location.lat, this.state.location.lng]
         return (
-            
+            <div className="map">
+
             <Map className="map" center={position} zoom={this.state.zoom}>
                 <TileLayer
                     attribution='&amp;copy <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
-                { this.state.haveUsersLocation ? 
+            { this.state.haveUsersLocation ? 
                 <Marker position={position}>
                     <Popup>
-                        A pretty CSS3 popup. <br /> Easily customizable.
+                        Hey I got you !
                     </Popup>
-                </Marker>: ""
-                }
-
+                    
+                </Marker>
+                : ""
+            }
             </Map>
-                    
-                    
+            <Card className="message-form">
+                <Card.Content>
+                    <Card.Header>Welcome to GuestMapp!</Card.Header>
+                    <Card.Description>Leave a message with your location ! <br/>
+                        Thanks for stopping by !
+                    </Card.Description>
+                    <br/>
+                    <Form onSubmit={this.formSubmit}>
+                        <Form.Field>
+                            <label>Name</label>
+                            <input 
+                                onChange={this.valueChange} 
+                                id="name" 
+                                name="name" 
+                                placeholder='Enter your name' 
+                                type="text"
+                                required />
+                        </Form.Field>
+                        <Form.Field>
+                            <label>Message</label>
+                            <TextArea
+                                onChange={this.valueChange} 
+                                id="message" 
+                                name="message" 
+                                placeholder='Enter your message'
+                                required />
+                        </Form.Field>
+                        <Button type='submit' disabled={!this.state.haveUsersLocation}>Submit</Button>
+                    </Form>
+                </Card.Content>
+            </Card>
 
-            
+            </div>
+                    
         );
     }   
 }
 
 
-export default MapBox;
+export default connect()(MapBox);

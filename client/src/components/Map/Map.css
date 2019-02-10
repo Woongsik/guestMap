@@ -11,3 +11,10 @@ body {
 .map {
     height: 100%;
 }
+
+.message-form {
+    z-index: 999;
+    position: absolute !important;
+    top: 0;
+    right: 14px;
+}
