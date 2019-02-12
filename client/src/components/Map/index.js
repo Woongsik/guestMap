@@ -1,4 +1,4 @@
-import React, {Component, createRef} from 'react';
+import React, {Component} from 'react';
 import { Card, Button, Form, TextArea, Dimmer, Loader } from 'semantic-ui-react';
 import "./Map.css";
 import UserMarkers from '../Markers';
@@ -193,13 +193,7 @@ class MapBox extends Component {
            
     }
     
-    
-    
-    
-    
     render() {
-        //console.log("location: "+JSON.stringify(this.state.location))
-        //console.log("tempLocation: "+JSON.stringify(this.state.tempLocation))
         const position = [this.state.location.lat, this.state.location.lng]
         const loader = (<Dimmer active>
                         <Loader />
@@ -213,8 +207,6 @@ class MapBox extends Component {
                 <UserMarkers key={"userMarker_"+index} userMessage={message}/>)
             })
         }
-
-
 
         return (
 
