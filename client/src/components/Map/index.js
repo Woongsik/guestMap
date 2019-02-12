@@ -1,5 +1,7 @@
 import React, {Component} from 'react';
+import { Card, Button, Form, TextArea, Dimmer, Loader, Divider } from 'semantic-ui-react';
 import "./Map.css";
+import UserMarkers from '../Markers';
 
 //Leaflet
 import {Map, TileLayer, Marker, Popup} from 'react-leaflet';
@@ -7,21 +9,18 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 //icon image
-import icon from 'leaflet/dist/images/marker-icon.png';
+import redIcon from 'leaflet/dist/images/userMarker-icon.png';  
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 
-import {saveMessage} from '../../actions/saveMessageActions';
+//actions from dispatch
+import {getMessage, saveMessage} from '../../actions/saveMessageActions';
 import {connect} from 'react-redux';
-import { Card, Button, Form, TextArea } from 'semantic-ui-react';
 
-
-let DefaultIcon = L.icon({
-    iconUrl: icon,
+let userIcon = L.icon({
+    iconUrl: redIcon,
     popupAnchor: [12.5, 0],
     shadowUrl: iconShadow
 });
-
-L.Marker.prototype.options.icon = DefaultIcon;
 
 class MapBox extends Component {
     
@@ -35,10 +34,18 @@ class MapBox extends Component {
         userMessage: {
             name:'',
             message:''
-        }
+        },
+        isSubmitted: false,
+        messageList: []
     }
 
+
     componentDidMount(){
+        this.props.dispatch(getMessage())
+        this.getCurrentLocation();
+    }
+    
+    getCurrentLocation = () => {
         navigator.geolocation.getCurrentPosition( (position) => {
             this.setState({
                 location:{
@@ -65,13 +72,16 @@ class MapBox extends Component {
                 })
         })
     }
-
+    
     formSubmit = (e)=> {
         e.preventDefault();
         //console.log(this.state.userMessage)
         const item = this.state.userMessage;
 
         this.props.dispatch(saveMessage(item));
+        this.setState({
+            isSubmitted: true
+        })
     }
 
     valueChange = (e) => {
@@ -85,26 +95,94 @@ class MapBox extends Component {
         }))
     }
 
+    makeMerged = (messageList) => {
+        const haveSeenLocation = {}
+        messageList = messageList.reduce( (all, message)=>{
+            const key = [message.lat.toFixed(2),message.lng.toFixed(2)];
+            if(haveSeenLocation[key]){
+                haveSeenLocation[key].otherMessages = haveSeenLocation[key].otherMessages || [];
+                haveSeenLocation[key].otherMessages.push(message)
+            }else{
+                haveSeenLocation[key] = message;
+                all.push(message);
+            }
+            return all;
+        }, []);
+
+        return messageList;
+    }
+
+    isMarkerMoved = (e) => {
+        const location = e.target._latlng;
+        this.setState({
+            location:{
+                lat: location.lat,
+                lng: location.lng
+            }
+        })
+    }
+
     render() {
         const position = [this.state.location.lat, this.state.location.lng]
+        const loader = (<Dimmer active>
+                        <Loader />
+                        </Dimmer>)        
+        let userMarkers = "";
+        if( (this.props.messageList).length > 0){
+            let newMessageList = this.makeMerged(this.props.messageList)
+            
+            userMarkers = newMessageList.map( (message, index) => {
+                return (
+                <UserMarkers key={"userMarker_"+index} userMessage={message}/>)
+            })
+        }
+
+        const popUpOpen = ref => {
+            if (ref) {
+              ref.leafletElement.openPopup()
+            }
+          }
+
+
+
         return (
-            <div className="map">
+
+        ( this.props.isLoading 
+        ? loader 
+        : <div className="map">
 
             <Map className="map" center={position} zoom={this.state.zoom}>
                 <TileLayer
                     attribution='&amp;copy <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
-            { this.state.haveUsersLocation ? 
-                <Marker position={position}>
+                {userMarkers}
+
+            { this.state.haveUsersLocation && !this.state.isSubmitted 
+            ? 
+                <Marker
+                    icon={userIcon} 
+                    position={position}
+                    ref={popUpOpen}
+                    draggable={true}
+                    onMoveend={this.isMarkerMoved}
+                    >
                     <Popup>
-                        Hey I got you !
+                        <Button color="red" style={{padding: "5px"}}>Hello! You are here!</Button> 
                     </Popup>
-                    
                 </Marker>
-                : ""
+            :   <Marker
+                    icon={userIcon} 
+                    position={position}
+                    ref={popUpOpen}>
+                    <Popup>
+                        <Button color="blue" style={{padding: "5px"}}>{this.state.userMessage.name}</Button> 
+                        {this.state.userMessage.message}
+                    </Popup>
+                </Marker>
             }
             </Map>
+
             <Card className="message-form">
                 <Card.Content>
                     <Card.Header>Welcome to GuestMapp!</Card.Header>
@@ -112,6 +190,7 @@ class MapBox extends Component {
                         Thanks for stopping by !
                     </Card.Description>
                     <br/>
+                    {this.state.isSubmitted ? "Thanks for the message and support !" : 
                     <Form onSubmit={this.formSubmit}>
                         <Form.Field>
                             <label>Name</label>
@@ -133,15 +212,26 @@ class MapBox extends Component {
                                 required />
                         </Form.Field>
                         <Button type='submit' disabled={!this.state.haveUsersLocation}>Submit</Button>
-                    </Form>
+                    </Form>}
+                    <Divider horizontal >
+                        Options
+                    </Divider>
+                    
+                    <Button color="yellow" size="small" onClick={this.getCurrentLocation}>Get my location back</Button>
                 </Card.Content>
             </Card>
 
-            </div>
+            </div>)
                     
         );
     }   
 }
 
 
-export default connect()(MapBox);
+
+const mapStateToProps = (state)=> ({
+    isLoading: state.getMessage.loading,
+    messageList: state.getMessage.item
+})
+
+export default connect(mapStateToProps)(MapBox);
