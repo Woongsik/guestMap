@@ -1,7 +1,7 @@
 # GUEST MAP
 Using Leaflet, User can leave a message with their location.
 Basically, MERN enviroment (MongoDB, Express, React, Node) is used and is deployed on Heroku. 
-( https://find-your-sport.herokuapp.com )
+The link will be updated soon !
 
 ## Requirements
 
