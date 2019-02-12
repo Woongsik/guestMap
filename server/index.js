@@ -7,10 +7,21 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
-mongoose.connect("mongodb://localhost/guestMap").then(
-    ()=>{ console.log("connection to MongoDB successful")},
-    (error)=>{ console.log("Connection to MongoDB failed "+ error)}
-)
+//local mongo
+// mongoose.connect("mongodb://localhost/guestMap").then(
+//     ()=>{ console.log("connection to MongoDB successful")},
+//     (error)=>{ console.log("Connection to MongoDB failed "+ error)}
+// )
+
+
+//database connection
+let mongourl = 'mongodb+srv://shoppinglist:shoppingpassword@cluster0-9li3p.mongodb.net/test?retryWrites=true'
+
+mongoose.connect(mongourl, {dbName:"guestMap", useNewUrlParser: true }).then(
+    () => {console.log("Connection to mongoDB successful")},
+    (error) => {console.log("Connection to mongoDB failed:"+error)}
+);
+
 
 app.use("/api", apiRouter);
 
