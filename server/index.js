@@ -5,7 +5,8 @@ const apiRouter = require('./routes/api')
 const app = express();
 
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.static(__dirname+"/Publichtml"));
 
 //local mongo
 // mongoose.connect("mongodb://localhost/guestMap").then(

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { BrowserRouter,Route, Switch, Redirect
+import { HashRouter, Route, Switch, Redirect
 } from 'react-router-dom'
 
 import MapBox from '../Map'
@@ -8,16 +8,16 @@ class App extends Component {
  
   render() {
     return (
-      <BrowserRouter>
+      <HashRouter>
         <Route>
           <Switch>
-            <Route path="/map" component={MapBox} />
+            <Route path="/" component={MapBox} />
 
-            <Redirect exact from="/" to="/map" />
+            <Redirect from="/*" to="/" />
             <Route render={ () => <h1>404</h1>} />
           </Switch>
         </Route>
-      </BrowserRouter>
+      </HashRouter>
     )
   }
 }
