@@ -1,6 +1,6 @@
 # GUEST MAP
 User can leave a message with their location.
-Basically, Leaflet-react and MERN enviroment (MongoDB, Express, React, Node) are used and deployed on Heroku. ( https://guest-map.herokuapp.com )
+Basically, Leaflet-react and MERN enviroment (MongoDB, Express, React, Node) are used.
 
 ## Requirements
 
